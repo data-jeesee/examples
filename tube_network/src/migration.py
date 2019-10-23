@@ -31,12 +31,23 @@ def entity_template(data):
 def relation_template(data):
     query = "match "
     for r, roleplayer in enumerate(data["roleplayers"]):
-        query += "$" + str(r) + " has " + roleplayer["key_type"] + " " + str(roleplayer["key_value"]) + "; "
+        query += "$" + str(r)
+        # it can be possible to have more "key_type" and "key_value" for a "roleplayer"
+        for a, roleplayer_attribute in enumerate(roleplayer["roleplayer_attributes"]):
+            query += " has " + roleplayer_attribute["key_type"] + " " + str(roleplayer_attribute["key_value"])
+            if a < len(roleplayer["roleplayer_attributes"]) - 1:
+                query += ","
+        query += "; "
 
     # match the relation if required
-    if "key_type" in data:
-        query += "$x has " + data["key_type"] + " " + str(data["key_value"]) + "; "
-
+    if "relation_key_attributes" in data:
+        query += "$x"
+        # it can be possible to have more "key_type" and "key_value" for the relation
+        for a, relation_key_attribute in enumerate(data["relation_key_attributes"]):
+            query += " has " + relation_key_attribute["key_type"] + " " + str(relation_key_attribute["key_value"])
+            if a < len(data["relation_key_attributes"]) - 1:
+                query += ","
+        query += "; "
 
     query += "insert $x ("
     for r, roleplayer in enumerate(data["roleplayers"]):
@@ -44,7 +55,7 @@ def relation_template(data):
         if r < len(data["roleplayers"]) - 1:
             query += ", "
 
-    if "key_type" in data:
+    if "relation_key_attributes" in data:
         query += ")"
     else:
         query += ") isa " + data["type"]
@@ -160,13 +171,21 @@ def construct_queries(entity_queries, relation_queries):
                                           relation_template(
                                               {
                                                   "type": "zone",
-                                                  "key_type": "name",
-                                                  "key_value": string(zone),
+                                                  "relation_key_attributes": [
+                                                      {
+                                                          "key_type": "name",
+                                                          "key_value": string(zone)
+                                                      }
+                                                      ],
                                                   "roleplayers": [
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(station["id"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(station["id"])
+                                                              }
+                                                              ],
                                                           "role_name": "contained-station"
                                                       }
                                                   ]
@@ -181,8 +200,12 @@ def construct_queries(entity_queries, relation_queries):
                                                   "roleplayers": [
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(station["id"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(station["id"])
+                                                              }
+                                                              ],
                                                           "role_name": "contained-station"
                                                       }
                                                   ],
@@ -205,8 +228,12 @@ def construct_queries(entity_queries, relation_queries):
                                           "roleplayers": [
                                               {
                                                   "type": "tube-line",
-                                                  "key_type": "name",
-                                                  "key_value": string(data["lineName"]),
+                                                  "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "name",
+                                                                  "key_value": string(data["lineName"])
+                                                              }
+                                                              ],
                                                   "role_name": "route-operator"
                                               }
                                           ],
@@ -229,19 +256,31 @@ def construct_queries(entity_queries, relation_queries):
                                           relation_template(
                                               {
                                                   "type": "route",
-                                                  "key_type": "identifier",
-                                                  "key_value": string(route_identifier),
+                                                  "relation_key_attributes": [
+                                                      {
+                                                          "key_type": "identifier",
+                                                          "key_value": string(route_identifier)
+                                                      }
+                                                      ],
                                                   "roleplayers": [
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(interval["stopId"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(interval["stopId"])
+                                                              }
+                                                              ],
                                                           "role_name": "origin"
                                                       },
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(interval["stopId"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(interval["stopId"])
+                                                              }
+                                                              ],
                                                           "role_name": "stop"
                                                       }
                                                   ]
@@ -253,19 +292,31 @@ def construct_queries(entity_queries, relation_queries):
                                           relation_template(
                                               {
                                                   "type": "route",
-                                                  "key_type": "identifier",
-                                                  "key_value": string(route_identifier),
+                                                  "relation_key_attributes": [
+                                                      {
+                                                          "key_type": "identifier",
+                                                          "key_value": string(route_identifier)
+                                                      }
+                                                      ],
                                                   "roleplayers": [
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(interval["stopId"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(interval["stopId"])
+                                                              }
+                                                              ],
                                                           "role_name": "stop"
                                                       },
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(interval["stopId"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(interval["stopId"])
+                                                              }
+                                                              ],
                                                           "role_name": "destination"
                                                       }
                                                   ]
@@ -277,13 +328,21 @@ def construct_queries(entity_queries, relation_queries):
                                           relation_template(
                                               {
                                                   "type": "route",
-                                                  "key_type": "identifier",
-                                                  "key_value": string(route_identifier),
+                                                  "relation_key_attributes": [
+                                                      {
+                                                          "key_type": "identifier",
+                                                          "key_value": string(route_identifier)
+                                                      }
+                                                      ],
                                                   "roleplayers": [
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(interval["stopId"]),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(interval["stopId"])
+                                                              }
+                                                              ],
                                                           "role_name": "stop"
                                                       }
                                                   ]
@@ -318,13 +377,21 @@ def construct_queries(entity_queries, relation_queries):
                                           relation_template(
                                               {
                                                   "type": "route",
-                                                  "key_type": "identifier",
-                                                  "key_value": string(route_identifier),
+                                                  "relation_key_attributes": [
+                                                      {
+                                                          "key_type": "identifier",
+                                                          "key_value": string(route_identifier)
+                                                      }
+                                                      ],
                                                   "roleplayers": [
                                                       {
                                                           "type": "route-section",
-                                                          "key_type": "identifier",
-                                                          "key_value": string(route_section_identifier),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "identifier",
+                                                                  "key_value": string(route_section_identifier)
+                                                              }
+                                                              ],
                                                           "role_name": "section"
                                                       }
                                                   ]
@@ -344,20 +411,32 @@ def construct_queries(entity_queries, relation_queries):
                                                   "roleplayers": [
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(from_station_id), # current stop
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(from_station_id) # current stop
+                                                              }
+                                                              ],
                                                           "role_name": "beginning"
                                                       },
                                                       {
                                                           "type": "station",
-                                                          "key_type": "naptan-id",
-                                                          "key_value": string(to_station_id), # next stop
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "naptan-id",
+                                                                  "key_value": string(to_station_id) # next stop
+                                                              }
+                                                              ],
                                                           "role_name": "end"
                                                       },
                                                       {
                                                           "type": "route-section",
-                                                          "key_type": "identifier",
-                                                          "key_value": string(route_section_identifier),
+                                                          "roleplayer_attributes": [
+                                                              {
+                                                                  "key_type": "identifier",
+                                                                  "key_value": string(route_section_identifier)
+                                                              }
+                                                              ],
                                                           "role_name": "service"
                                                       }
                                                   ],
